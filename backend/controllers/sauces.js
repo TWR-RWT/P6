@@ -2,9 +2,7 @@ const sauce = require('../models/sauce');
 const fs = require('fs'); //pour acceder aux différentes oppérations liées au système de fichiers
 
 exports.createSauce = (req, res, next) => {
-    const sauceObjet = JSON.parse(req.body.Sauce);
-    console.log(req.body.Sauce);
-    console.log(sauceObjet);
+    const sauceObjet = JSON.parse(req.body.sauce);
     delete sauceObjet._id;
     const Sauce = new sauce({
         ...sauceObjet, //raccourcis pour récupérer la model de la requête
@@ -53,4 +51,29 @@ sauce.find()
     .catch(error => res.status(400).json({ error }));
 };
 
-//Ajouter like et dislike functions
+exports.likeSauce = (req, res, next) => {
+    if (req.body.like === 1) { // Dans le cas d'un like:
+        sauce.updateOne({ _id: req.params.id }, { $inc: { likes: req.body.like++ }, $push: { usersLiked: req.body.userId } })
+            .then(() => res.status(200).json({ message: 'La sauce a été likée !' }))
+            .catch(error => res.status(400).json({ error }));
+    } else if (req.body.like === -1) { // Dans le cas d'un dislike:
+        sauce.updateOne({ _id: req.params.id }, { $inc: { dislikes: req.body.like++ }, $push: { usersDisliked: req.body.userId } })
+            .then(() => res.status(200).json({ message: 'La sauce a été likée !' }))
+            .catch(error => res.status(400).json({ error }));
+    } else { // Dans le cas pas de like: req.body.like === 0
+        sauce.findOne({ _id: req.params.id })
+            .then(sauce => {
+                if (sauce.usersLiked.includes(req.body.userId)) { //si l'utilisateur avait précedement liké la sauce
+                    sauce.updateOne({ _id: req.params.id }, { $pull: { usersLiked: req.body.userId }, $inc: { likes: -1 } })
+                        .then(() => res.status(200).json({ message: 'Un like de moins !' }))
+                        .catch(error => res.status(400).json({ error }))
+                } else if (sauce.usersDisliked.includes(req.body.userId)) { //si l'utilisateur avait précedement disliké la sauce
+                    sauce.updateOne({ _id: req.params.id }, { $pull: { usersDisliked: req.body.userId }, $inc: { dislikes: -1 } })
+                        .then(() => res.status(200).json({ message: 'Un dislike de moins !' }))
+                        .catch(error => res.status(400).json({ error }))
+                }
+            })
+            .catch(error => res.status(400).json({ error })); 
+    }
+}
+
