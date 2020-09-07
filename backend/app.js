@@ -6,7 +6,10 @@ const path = require('path');
 const sauceRoutes = require('./routes/sauces');
 const userRoutes = require('./routes/user');
 
-mongoose.connect('mongodb+srv://admin:AdminSoPekocko@sopekocko.uu5l0.mongodb.net/test?retryWrites=true&w=majority',
+const dotenv = require('dotenv').config();
+//console.log(dotenv.parsed);
+
+mongoose.connect(`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@${process.env.DB_NAME}`,
     {
         userNewUrlParser: true,
         useUnifiedTopology: true
