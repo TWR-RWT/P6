@@ -24,7 +24,7 @@ exports.login = (req, res, next) => {
                 return res.status(401).json({message: 'Utilisateur non trouvé !'});
             }
             bcrypt.compare(req.body.password, user.password) //on compare le mot de passe rentrée avec le hash que l'on a enregistrée dans la bdd pour ce user
-                .then(valid => {
+                .then(valid => { //on récupère un booléan false ou true que l'on doit traiter
                     if (!valid) {
                         return res.status(401).json({error: 'Mot de passe incorrect !'});
                     }
